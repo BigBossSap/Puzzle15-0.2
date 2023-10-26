@@ -1,0 +1,38 @@
+﻿<Window x:Class="PracticaPuzzle.Puzzle"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:PracticaPuzzle" xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+        mc:Ignorable="d"
+        Title="Puzzle" Height="450" Width="800">
+    <Grid Name="baseGrid">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <StatusBar Grid.Row="1" HorizontalAlignment="Stretch">
+            <StatusBarItem>
+                <TextBlock x:Name="Temps" Text="Temps: " />
+            </StatusBarItem>
+            <StatusBarItem>
+                <Separator />
+            </StatusBarItem>
+            <StatusBarItem>
+                <TextBlock x:Name="StatusText" Text="00:00:00" />
+            </StatusBarItem>
+            <StatusBarItem>
+                <Separator />
+            </StatusBarItem>
+            <StatusBarItem>
+                <TextBlock  Text="Clicks: " />
+            </StatusBarItem>
+            <StatusBarItem>
+                <Separator />
+            </StatusBarItem>
+            <StatusBarItem>
+                <TextBlock x:Name="sbClicks" Text="0" />
+            </StatusBarItem>
+        </StatusBar>
+    </Grid>
+</Window>
