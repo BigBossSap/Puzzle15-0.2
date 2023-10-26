@@ -28,6 +28,7 @@ namespace PracticaPuzzle
         private TimeSpan elapsedTime;
         private bool isTimerRunning;
         int clicks = 0;
+        int completat = 0;
         private Fitxa?[,] fitxes; // Declare an array of Fitxa
         private Grid? graella;
         public Puzzle(int columns, int rows) // Pass the values as constructor parameters
@@ -62,7 +63,7 @@ namespace PracticaPuzzle
         private void CreaControlsDinamics()
         {
             graella = new Grid();          
-            graella.ShowGridLines = true;
+           // graella.ShowGridLines = true;
             
             CreaFiles(graella, files);
             CreaColumnes(graella, columnes);
@@ -88,6 +89,8 @@ namespace PracticaPuzzle
                     fitxa.Tag = $"{fila + 1},{columna + 1}"; // Set the tag to the row and column
                     int number = numbers[index]; // Get the number
                     fitxa.Text = number == -1 ? "" : number.ToString(); // Set the text (or empty for -1)
+                    graella.Margin = new Thickness(10);
+                    graella.Background = new SolidColorBrush(Colors.Aquamarine);
                     graella.Children.Add(fitxa);
 
                     // Calculate the row and column based on the number
@@ -96,7 +99,7 @@ namespace PracticaPuzzle
 
                     // Set the Tag property with the correct position
                     fitxa.Tag = $"{correctRow},{correctColumn}";
-
+                    fitxa.Margin = new Thickness(6);
                     // Set row and column for the Fitxa
                     Grid.SetRow(fitxa, fila);
                     Grid.SetColumn(fitxa, columna);                    
@@ -111,6 +114,7 @@ namespace PracticaPuzzle
                     if (fitxa.Tag.ToString() == $"{fila},{columna}")
                     {
                         fitxa.Background = new SolidColorBrush(Colors.Green);
+                        completat++;
                     }
 
 

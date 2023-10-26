@@ -8,7 +8,7 @@
         Title="Puzzle" Height="450" Width="800">
     <Grid Name="baseGrid">
         <Grid.RowDefinitions>
-            <RowDefinition Height="*" />
+            <RowDefinition Height="*"/>
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
         <StatusBar Grid.Row="1" HorizontalAlignment="Stretch">
@@ -31,7 +31,19 @@
                 <Separator />
             </StatusBarItem>
             <StatusBarItem>
-                <TextBlock x:Name="sbClicks" Text="0" />
+                <TextBlock Name="sbClicks" Text="0" />
+            </StatusBarItem>
+            <StatusBarItem>
+                <Separator />
+            </StatusBarItem>
+            <StatusBarItem>
+                <TextBlock  Text="Completat: " />
+            </StatusBarItem>
+            <StatusBarItem>
+                <Separator />
+            </StatusBarItem>
+            <StatusBarItem>
+                <TextBlock x:Name="sbCompletat" Text="0" />
             </StatusBarItem>
         </StatusBar>
     </Grid>
