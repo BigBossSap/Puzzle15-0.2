@@ -25,112 +25,172 @@ namespace PracticaPuzzle
         public Color DefaultButtonColor { get; private set; }
 
         private DispatcherTimer timer;
-        private TimeSpan elapsedTime;
+
+        private TimeSpan tempsTranscorregut;
+
         private bool isTimerRunning;
+        private bool jocPausat;
+        private const int  segons = 1;
         int clicks = 0;
         int completat = 0;
-        private Fitxa?[,] fitxes; // Declare an array of Fitxa
+        private Fitxa?[,] fitxes; 
         private Grid? graella;
-        public Puzzle(int columns, int rows) // Pass the values as constructor parameters
+        public Puzzle(int columns, int rows) 
         {
             InitializeComponent();
-            columnes = columns; // Set the properties here
-            files = rows;       // Set the properties here
+            columnes = columns; 
+            files = rows;       
             
-            DefaultButtonColor = Colors.Red;
+            DefaultButtonColor = Colors.IndianRed;
 
             timer = new DispatcherTimer();
-            timer.Interval = TimeSpan.FromSeconds(1); // Update every second
+            timer.Interval = TimeSpan.FromSeconds(1); 
             timer.Tick += Timer_Tick;
 
             // Additional initialization
-            elapsedTime = TimeSpan.Zero;
+            tempsTranscorregut = TimeSpan.Zero;
             isTimerRunning = false;
-
+            this.KeyDown += Fitxa_KeyDown;
             CreaControlsDinamics();
         }
 
         private void Timer_Tick(object? sender, EventArgs e)
         {
-            if (isTimerRunning)
+            if (isTimerRunning && !jocPausat)
             {
-                elapsedTime = elapsedTime.Add(TimeSpan.FromSeconds(1));
-                StatusText.Text = elapsedTime.ToString(@"hh\:mm\:ss");
+                tempsTranscorregut = tempsTranscorregut.Add(TimeSpan.FromSeconds(segons));
+                StatusText.Text = tempsTranscorregut.ToString(@"hh\:mm\:ss");
+               
             }
         }
 
-      
+        private void Pausa()
+        {
+            jocPausat = !jocPausat;
+            if (jocPausat)
+            {
+                // Pausem
+                timer.Stop();
+                foreach (Fitxa button in graella.Children)
+                {
+                    button.IsEnabled = false;
+                }              
+                StatusText.Text = "Pausa";               
+            }
+            else
+            {
+                // Resume
+                timer.Start();
+                foreach (Fitxa button in graella.Children)
+                {
+                    button.IsEnabled = true;
+                }
+                StatusText.Text = tempsTranscorregut.ToString(@"hh\:mm\:ss");              
+            }
+        }
         private void CreaControlsDinamics()
         {
             graella = new Grid();          
-           // graella.ShowGridLines = true;
+           
+
+            // Crear files i columnes
             
             CreaFiles(graella, files);
             CreaColumnes(graella, columnes);
+
+            // Afegir la graella al grid
 
             baseGrid.Children.Add(graella);
             Grid.SetRow(graella, 0);
             Grid.SetColumn(graella, 0);
 
+            //Inicialitzar array de Fitxa
+            
+            fitxes = new Fitxa[files, columnes]; 
 
-            fitxes = new Fitxa[files, columnes]; // Initialize the array
+            List<int> numbers = Enumerable.Range(1, files * columnes - 1).ToList(); //Per crear una llista consecutiva de numeros
 
-            List<int> numbers = Enumerable.Range(1, files * columnes - 1).ToList(); // Create a list of consecutive numbers (one less)
-            int shuffles= Shuffle(numbers); // Shuffle the list
-            numbers.Add(-1); // Add -1 to the end to represent the last hidden button
+            //Shuffle fins que sigui resoluble
+            do
+            {
+                Shuffle(numbers);
+            } while (!IsSolvable(numbers));
 
-            int index = 0; // Index to iterate through the shuffled numbers
+            numbers.Add(-1); // -1 representara el l'espai buit
+            int index = 0; // Index per mourens per l'array de Fitxa
+
+            for (int fila = 0; fila < files; fila++)
+            {
+                for (int columna = 0; columna < columnes; columna++)    //Per cada posicio de la graella:
+                {
+                    Fitxa fitxa = new Fitxa();                
+                    int numero = numbers[index]; // Agafem un numero
+                    fitxa.Text = numero == -1 ? "" : numero.ToString(); // Si es el -1 , no posem text
+                    graella.Margin = new Thickness(10);
+                    graella.Background = new SolidColorBrush(Colors.Aquamarine);
+                    graella.Children.Add(fitxa);
+
+                    // Calculem quina seria la posició correcte del numero
+                    int filaCorrecte = (numero - 1) / columnes;
+                    int columnaCorrecte = (numero - 1) % columnes;
+
+                    // Posem un tag per mes endavant cambiar el color si es correcte
+                    fitxa.Tag = $"{filaCorrecte},{columnaCorrecte}";
+                    fitxa.Margin = new Thickness(6);
+
+                    // Coloquem la fitxa
+                    Grid.SetRow(fitxa, fila);
+                    Grid.SetColumn(fitxa, columna);                    
+
+                    fitxes[fila, columna] = fitxa; // La posem a l'array
+                    index++;
+
+                    if (fila == files - 1 && columna == columnes - 1) // si es l'ultima posicio, amagem el numero 
+                    {
+                        fitxa.estaAmagat = true;
+                        fitxa.Text = ""; 
+                    }
+
+                    if (fitxa.Tag.ToString() == $"{fila},{columna}") // Si la posicio coincideix amb el tag, posem el color verd
+                    {
+                        fitxa.Background = new SolidColorBrush(Colors.Green);
+                       
+                    }
+
+
+                    
+                    
+
+                    else fitxa.Background = new SolidColorBrush(Colors.IndianRed);
+                    fitxa.Click += Button_Click; 
+                }
+            }
+
+
+            //completat
+
+            int botonsCorrectes = 0;
 
             for (int fila = 0; fila < files; fila++)
             {
                 for (int columna = 0; columna < columnes; columna++)
                 {
-                    Fitxa fitxa = new Fitxa();
-                    fitxa.Tag = $"{fila + 1},{columna + 1}"; // Set the tag to the row and column
-                    int number = numbers[index]; // Get the number
-                    fitxa.Text = number == -1 ? "" : number.ToString(); // Set the text (or empty for -1)
-                    graella.Margin = new Thickness(10);
-                    graella.Background = new SolidColorBrush(Colors.Aquamarine);
-                    graella.Children.Add(fitxa);
+                    string[] tagParts = fitxes[fila, columna].Tag.ToString().Split(',');
+                    int filaCorrecte = int.Parse(tagParts[0]);
+                    int columnaCorrecte = int.Parse(tagParts[1]);
 
-                    // Calculate the row and column based on the number
-                    int correctRow = (number - 1) / columnes;
-                    int correctColumn = (number - 1) % columnes;
-
-                    // Set the Tag property with the correct position
-                    fitxa.Tag = $"{correctRow},{correctColumn}";
-                    fitxa.Margin = new Thickness(6);
-                    // Set row and column for the Fitxa
-                    Grid.SetRow(fitxa, fila);
-                    Grid.SetColumn(fitxa, columna);                    
-                    fitxes[fila, columna] = fitxa; // Add the Fitxa to the array
-                    index++;
-                    if (fila == files - 1 && columna == columnes - 1)
+                    if (fila == filaCorrecte && columna == columnaCorrecte)
                     {
-                        fitxa.estaAmagat = true;
-                        fitxa.Text = ""; // Clear the text for the last button
+                        botonsCorrectes++;
                     }
-
-                    if (fitxa.Tag.ToString() == $"{fila},{columna}")
-                    {
-                        fitxa.Background = new SolidColorBrush(Colors.Green);
-                        completat++;
-                    }
-
-
-                    
-                    if (fitxa.Tag.ToString() == $"{fila},{columna}")
-                    {
-                        fitxa.Background = new SolidColorBrush(Colors.Green);
-                    }
-
-                    else fitxa.Background = new SolidColorBrush(Colors.Red);
-                    fitxa.Click += Button_Click; // Add the click event handler
-                    fitxa.KeyDown += Fitxa_KeyDown; // Add the key down event handler
                 }
             }
 
-           
+            // Actualitzem el percentatge de completat
+            int totalButtons = columnes * files-1;
+            sbCompletat.Text = (botonsCorrectes * 100 / totalButtons) + "%";
+
+
         }
 
         private void Fitxa_KeyDown(object sender, KeyEventArgs e)
@@ -139,100 +199,120 @@ namespace PracticaPuzzle
             {               
                 Button_Click(sender, new RoutedEventArgs());
             }
+
+            else if (e.Key == Key.Escape)
+            {
+                Pausa();
+                e.Handled = true;
+            }
+
+           
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            Fitxa clickedButton = (Fitxa)sender;
-           
+            Fitxa botoClickat = (Fitxa)sender;
 
-            
+          
+
+
+            //cronometre
 
             if (!isTimerRunning)
             {
                 timer.Start();
                 isTimerRunning = true;
             }
-            // Get the row and column of the clicked button
-            int clickedRow = Grid.GetRow(clickedButton);
-            int clickedColumn = Grid.GetColumn(clickedButton);
+            // Aconseguim la fila i columna de la fitxa
+            int filaClick = Grid.GetRow(botoClickat);
+            int columnaClick = Grid.GetColumn(botoClickat);
 
-            
-            //ChangeColor(clickedRow,clickedButton,clickedColumn);
-            // Get the row and column of the hidden space
-            int hiddenRow = -1;
-            int hiddenColumn = -1;
 
-            // Find the hidden space
+
+            int filaAmbForat=-1;
+            int columnaAmbForat=-1; 
+            //Busquem l'espai buit
+            bool trobat = false;
+            while (!trobat) { 
             for (int fila = 0; fila < files; fila++)
             {
                 for (int columna = 0; columna < columnes; columna++)
                 {
                     if (fitxes[fila, columna].estaAmagat)
                     {
-                        hiddenRow = fila;
-                        hiddenColumn = columna;
-                        break;
+                        filaAmbForat = fila;
+                        columnaAmbForat = columna;
+                        trobat = true;
                     }
                 }
             }
 
-            // Check if the clicked button is in the same row or column as the hidden space
-            if (clickedRow == hiddenRow || clickedColumn == hiddenColumn)
-            {
-                int rowDifference = Math.Abs(clickedRow - hiddenRow);
-                int columnDifference = Math.Abs(clickedColumn - hiddenColumn);
+        }
 
-                if ((rowDifference == 1 && columnDifference == 0) || (rowDifference == 0 && columnDifference == 1))
+            // Comprovem que la fitxa o columna clickada estigui al costat de l'espai buit
+            if (filaClick == filaAmbForat || columnaClick == columnaAmbForat)
+            {
+                int diferenciaFila = Math.Abs(filaClick - filaAmbForat);
+                int diferenciaColumna = Math.Abs(columnaClick - columnaAmbForat);
+
+                if ((diferenciaFila == 1 && diferenciaColumna == 0) || (diferenciaFila == 0 && diferenciaColumna == 1)) // Si la diferencia es 1, estan al costat, ja sigui fila o columna
                 {
                     // If the clicked button is adjacent to the hidden space, swap positions
-                    CambiaPosicio(clickedRow, clickedColumn, hiddenRow, hiddenColumn);
+                    CambiaPosicio(filaClick, columnaClick, filaAmbForat, columnaAmbForat);
                     clicks++;
-                    CambiarColor(clickedRow, clickedButton, clickedColumn); // Update the color after the swap
-                    CambiarColor(hiddenRow, fitxes[hiddenRow, hiddenColumn], hiddenColumn); // Update the color of the hidden button
+                    CambiarColor(filaClick, botoClickat, columnaClick); // Update the color after the swap
+                    CambiarColor(filaAmbForat, fitxes[filaAmbForat, columnaAmbForat], columnaAmbForat); // Update the color of the hidden button
                 }
                 else
                 {
-                    if (clickedRow == hiddenRow)
+                    if (filaClick == filaAmbForat)
                     {
                         // If the clicked button is in the same row, move all buttons in the row closer to the hidden space
-                        if (clickedColumn < hiddenColumn)
+                        if (columnaClick < columnaAmbForat)
                         {
                             // Move buttons to the right
-                            for (int columna = hiddenColumn - 1; columna >= clickedColumn; columna--)
+                            for (int columna = columnaAmbForat - 1; columna >= columnaClick; columna--)
                             {
-                                CambiaPosicio(clickedRow, columna + 1, clickedRow, columna);
+                                CambiaPosicio(filaClick, columna + 1, filaClick, columna);
+                                CambiarColor(filaClick, botoClickat, columnaClick); // Update the color after the swap
+                                CambiarColor(filaAmbForat, fitxes[filaAmbForat, columnaAmbForat], columnaAmbForat); // Update the color of the hidden button
                                 clicks++;
                             }
                         }
-                        else if (clickedColumn > hiddenColumn)
+                        else if (columnaClick > columnaAmbForat)
                         {
                             // Move buttons to the left
-                            for (int columna = hiddenColumn + 1; columna <= clickedColumn; columna++)
+                            for (int columna = columnaAmbForat + 1; columna <= columnaClick; columna++)
                             {
-                                CambiaPosicio(clickedRow, columna - 1, clickedRow, columna);
+                                CambiaPosicio(filaClick, columna - 1, filaClick, columna);
+                                CambiarColor(filaClick, botoClickat, columnaClick); // Update the color after the swap
+                                CambiarColor(filaAmbForat, fitxes[filaAmbForat, columnaAmbForat], columnaAmbForat); // Update the color of the hidden button
                                 clicks++;
                             }
                         }
                     }
-                    else if (clickedColumn == hiddenColumn)
+                    else if (columnaClick == columnaAmbForat)
                     {
                         // If the clicked button is in the same column, move all buttons in the column closer to the hidden space
-                        if (clickedRow < hiddenRow)
+                        if (filaClick < filaAmbForat)
                         {
                             // Move buttons down
-                            for (int fila = hiddenRow - 1; fila >= clickedRow; fila--)
+                            for (int fila = filaAmbForat - 1; fila >= filaClick; fila--)
                             {
-                                CambiaPosicio(fila + 1, clickedColumn, fila, clickedColumn);
-                               clicks++;
+                                CambiaPosicio(fila + 1, columnaClick, fila, columnaClick);
+                                CambiarColor(filaClick, botoClickat, columnaClick); // Update the color after the swap
+                                CambiarColor(filaAmbForat, fitxes[filaAmbForat, columnaAmbForat], columnaAmbForat); // Update the color of the hidden button
+                                clicks++;
                             }
                         }
-                        else if (clickedRow > hiddenRow)
+                        else if (filaClick > filaAmbForat)
                         {
                             // Move buttons up
-                            for (int fila = hiddenRow + 1; fila <= clickedRow; fila++)
+                            for (int fila = filaAmbForat + 1; fila <= filaClick; fila++)
                             {
-                                CambiaPosicio(fila - 1, clickedColumn, fila, clickedColumn);
+                                CambiaPosicio(fila - 1, columnaClick, fila, columnaClick);
+                                CambiarColor(filaClick, botoClickat, columnaClick); // Update the color after the swap
+                                CambiarColor(filaAmbForat, fitxes[filaAmbForat, columnaAmbForat], columnaAmbForat); // Update the color of the hidden button
                                 clicks++;
                             }
                         }
@@ -246,24 +326,50 @@ namespace PracticaPuzzle
             }
             sbClicks.Text = clicks.ToString();
 
+            //completat
+
+            int correctButtons = 0;
+
+            for (int fila = 0; fila < files; fila++)
+            {
+                for (int columna = 0; columna < columnes; columna++)
+                {
+                    string[] tagParts = fitxes[fila, columna].Tag.ToString().Split(',');
+                    int expectedRow = int.Parse(tagParts[0]);
+                    int expectedColumn = int.Parse(tagParts[1]);
+
+                    if (fila == expectedRow && columna == expectedColumn)
+                    {
+                        correctButtons++;
+                    }
+                }
+            }
+
+            // Update the percentage completion
+            int totalButtons = columnes * files - 1;
+            sbCompletat.Text = (correctButtons * 100 / totalButtons) + "%";
+
+
         }
 
-        private void CambiarColor(int clickedRow, Fitxa clickedButton, int clickedColumn )
+        private void CambiarColor(int fila, Fitxa fitxa, int columna )
         {
-            string[] tagParts = clickedButton.Tag.ToString().Split(',');
-            int expectedRow = int.Parse(tagParts[0]);
-            int expectedColumn = int.Parse(tagParts[1]);
+            string[] posicioTag = fitxa.Tag.ToString().Split(',');
+            int filaCorrecte = int.Parse(posicioTag[0]);
+            int columnaCorrecte = int.Parse(posicioTag[1]);
 
-            // Check if the clicked button is in the correct position
-            if (clickedRow == expectedRow && clickedColumn == expectedColumn)
+            
+            if (fila == filaCorrecte && columna == columnaCorrecte)
             {
-                // Set the background color of the clicked button to green
-                clickedButton.Background = new SolidColorBrush(Colors.Green);
+               
+                fitxa.Background = new SolidColorBrush(Colors.Green);
+               
             }
             else
             {
-                // Set the background color of the clicked button to another color to indicate it's been moved
-                clickedButton.Background = new SolidColorBrush(Colors.Red); // Change to your desired color
+                
+                fitxa.Background = new SolidColorBrush(Colors.IndianRed);     
+                
             }
 
 
@@ -323,5 +429,42 @@ namespace PracticaPuzzle
                 graella.ColumnDefinitions.Add(cd);
             }
         }
+
+        private bool IsSolvable(List<int> numbers)
+        {
+            int inversions = 0;
+            bool resoluble = false;
+            for (int i = 0; i < numbers.Count; i++)
+            {
+                for (int j = i + 1; j < numbers.Count; j++)
+                {
+                    if (numbers[i] > numbers[j])
+                    {
+                        inversions++;
+                    }
+                }
+            }
+
+            // If the number of inversions is even, the puzzle is solvable.
+            if (inversions % 2 == 0)
+            {
+                resoluble = true;
+            }
+            else
+            {
+                // If the number of inversions is odd, swap the last two numbers to make it solvable.
+                int lastIndex = numbers.Count - 1;
+
+                int temp = numbers[lastIndex];
+                numbers[lastIndex] = numbers[lastIndex - 1];
+                numbers[lastIndex - 1] = temp;
+
+                resoluble = true;
+            }
+
+            return resoluble;
+        }
+
+
     }
 }

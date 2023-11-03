@@ -3,19 +3,24 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:PracticaPuzzle" xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+        xmlns:local="clr-namespace:PracticaPuzzle"
+        xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
-    <Grid>
+        Title="Menu Principal" Height="250" Width="250"
+        Background="#F0F0F0">
+    <Grid Background="#FFFFFF">
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <TextBlock Grid.Row="0" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="10">Columns:</TextBlock>
-        <TextBlock Grid.Row="1" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="10">Files:</TextBlock>
-        <xctk:IntegerUpDown x:Name="columnes" Grid.Row="0" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="80,0,0,0" Width="100" />
-        <xctk:IntegerUpDown x:Name="files" Grid.Row="1" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="80,0,0,0" Width="100" />
-        <Button Name="btnContinuar" Content="Continuar" Grid.Row="2" HorizontalAlignment="Center" VerticalAlignment="Center" Width="100" Margin="0,10,0,0" Click="btnContinuar_Click" />
+
+        <TextBlock Grid.Row="0" Margin="10" HorizontalAlignment="Left" VerticalAlignment="Center" FontSize="14">Columnes:</TextBlock>
+        <TextBlock Grid.Row="1" Margin="10" HorizontalAlignment="Left" VerticalAlignment="Center" FontSize="14">Files:</TextBlock>
+
+        <xctk:IntegerUpDown x:Name="columnes" Grid.Row="0" Margin="80,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Center" Width="100" Minimum="1" AllowTextInput="False" Value="1" />
+        <xctk:IntegerUpDown x:Name="files" Grid.Row="1" Margin="80,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Center" Width="100" Minimum="1" AllowTextInput="False" Value="1" />
+
+        <Button Name="btnContinuar" Content="Jugar" Grid.Row="2" Margin="0,10,0,0" HorizontalAlignment="Center" VerticalAlignment="Center" Width="100" Click="btnContinuar_Click" FontSize="20" />
     </Grid>
 </Window>

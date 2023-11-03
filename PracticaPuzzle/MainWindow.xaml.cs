@@ -31,14 +31,27 @@ namespace PracticaPuzzle
 
         public void btnContinuar_Click(object sender, RoutedEventArgs e)
         {
-            int columnsValue = int.Parse(columnes.Text);
-            int filesValue = int.Parse(files.Text);
+            int columnes = (int)this.columnes.Value;
+            int files = (int)this.files.Value;
 
-            Puzzle puzzle = new Puzzle(columnsValue,filesValue);
-            puzzle.columnes = columnsValue;
-            puzzle.files = filesValue;
+            if (columnes > 1 && files > 0 || columnes > 0 && files > 1)
+            {
+                Puzzle puzzle = new Puzzle(columnes, files);
+                puzzle.ShowDialog();
+            }
+            else
+            {
+                // Display an error message to the user or take appropriate action for invalid input.
+                MessageBox.Show("Columnes i files no pot ser 1");
+            }
+        }
 
-            puzzle.ShowDialog();
+        private void NomesNums(object sender, TextCompositionEventArgs e)
+        {
+            if (!int.TryParse(e.Text, out _))
+            {
+                e.Handled = true; 
+            }
         }
 
     }

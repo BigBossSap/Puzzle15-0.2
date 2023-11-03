@@ -37,7 +37,7 @@
                 <Separator />
             </StatusBarItem>
             <StatusBarItem>
-                <TextBlock  Text="Completat: " />
+                <TextBlock Name="Completat" Text="Completat: " />
             </StatusBarItem>
             <StatusBarItem>
                 <Separator />
