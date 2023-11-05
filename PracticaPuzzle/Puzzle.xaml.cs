@@ -107,10 +107,13 @@ namespace PracticaPuzzle
 
             List<int> numbers = Enumerable.Range(1, files * columnes - 1).ToList(); //Per crear una llista consecutiva de numeros
 
-            //Shuffle fins que sigui resoluble
+            //Shuffle fins que sigui resoluble, n2 cops
+
+            int n2 = numbers.Count * numbers.Count;
+
             do
             {
-                Shuffle(numbers);
+                Shuffle(numbers,n2);
             } while (!esResoluble(numbers));
 
             numbers.Add(-1); // -1 representara el l'espai buit
@@ -311,26 +314,26 @@ namespace PracticaPuzzle
 
             //completat
 
-            int correctButtons = 0;
+            int botonsCorrectes = 0;
 
             for (int fila = 0; fila < files; fila++)
             {
                 for (int columna = 0; columna < columnes; columna++)
                 {
                     string[] tagParts = fitxes[fila, columna].Tag.ToString().Split(',');
-                    int expectedRow = int.Parse(tagParts[0]);
-                    int expectedColumn = int.Parse(tagParts[1]);
+                    int filaCorrecte = int.Parse(tagParts[0]);
+                    int columnaCorrecte = int.Parse(tagParts[1]);
 
-                    if (fila == expectedRow && columna == expectedColumn)
+                    if (fila == filaCorrecte && columna == columnaCorrecte)
                     {
-                        correctButtons++;
+                        botonsCorrectes++;
                     }
                 }
             }
 
             
-            int totalButtons = columnes * files - 1;
-            sbCompletat.Text = (correctButtons * 100 / totalButtons) + "%";
+            int totalBotons = columnes * files - 1;
+            sbCompletat.Text = (botonsCorrectes * 100 / totalBotons) + "%";
 
             if (sbCompletat.Text == "100%")
             {
@@ -382,22 +385,23 @@ namespace PracticaPuzzle
             
         }
 
-        private static int Shuffle<T>(IList<T> list)
+        private static void Shuffle<T>(IList<T> list, int numberOfShuffles)
         {
             Random rnd = new Random();
-            int n = list.Count;
-            int shuffles = 0;
-            while (n > 1)
-            {
-                n--;
-                int k = rnd.Next(n + 1);
-                T value = list[k];
-                list[k] = list[n];
-                list[n] = value;
-                shuffles++;
-            }
 
-            return shuffles;
+            for (int shuffleCount = 0; shuffleCount < numberOfShuffles; shuffleCount++)
+            {
+                int n = list.Count;
+
+                while (n > 1)
+                {
+                    n--;
+                    int k = rnd.Next(n + 1);
+                    T value = list[k];
+                    list[k] = list[n];
+                    list[n] = value;
+                }
+            }
         }
 
         private void CreaFiles(Grid graella, int numFiles)
