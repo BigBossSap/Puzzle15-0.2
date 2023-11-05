@@ -22,7 +22,8 @@ namespace PracticaPuzzle
     {
         public int columnes { get; set; }
         public int files { get; set; }
-        public Color DefaultButtonColor { get; private set; }
+
+        public Color DefaultButtonColor;
 
         private DispatcherTimer timer;
 
@@ -39,15 +40,11 @@ namespace PracticaPuzzle
         {
             InitializeComponent();
             columnes = columns; 
-            files = rows;       
-            
+            files = rows;                  
             DefaultButtonColor = Colors.IndianRed;
-
             timer = new DispatcherTimer();
             timer.Interval = TimeSpan.FromSeconds(1); 
             timer.Tick += Timer_Tick;
-
-            // Additional initialization
             tempsTranscorregut = TimeSpan.Zero;
             isTimerRunning = false;
             this.KeyDown += Fitxa_KeyDown;
@@ -114,7 +111,7 @@ namespace PracticaPuzzle
             do
             {
                 Shuffle(numbers);
-            } while (!IsSolvable(numbers));
+            } while (!esResoluble(numbers));
 
             numbers.Add(-1); // -1 representara el l'espai buit
             int index = 0; // Index per mourens per l'array de Fitxa
@@ -156,12 +153,7 @@ namespace PracticaPuzzle
                         fitxa.Background = new SolidColorBrush(Colors.Green);
                        
                     }
-
-
-                    
-                    
-
-                    else fitxa.Background = new SolidColorBrush(Colors.IndianRed);
+                    else fitxa.Background = new SolidColorBrush(DefaultButtonColor);
                     fitxa.Click += Button_Click; 
                 }
             }
@@ -213,9 +205,7 @@ namespace PracticaPuzzle
         {
             Fitxa botoClickat = (Fitxa)sender;
 
-          
-
-
+         
             //cronometre
 
             if (!isTimerRunning)
@@ -257,71 +247,64 @@ namespace PracticaPuzzle
 
                 if ((diferenciaFila == 1 && diferenciaColumna == 0) || (diferenciaFila == 0 && diferenciaColumna == 1)) // Si la diferencia es 1, estan al costat, ja sigui fila o columna
                 {
-                    // If the clicked button is adjacent to the hidden space, swap positions
+                   
                     CambiaPosicio(filaClick, columnaClick, filaAmbForat, columnaAmbForat);
                     clicks++;
-                    CambiarColor(filaClick, botoClickat, columnaClick); // Update the color after the swap
-                    CambiarColor(filaAmbForat, fitxes[filaAmbForat, columnaAmbForat], columnaAmbForat); // Update the color of the hidden button
+                  
                 }
                 else
                 {
                     if (filaClick == filaAmbForat)
                     {
-                        // If the clicked button is in the same row, move all buttons in the row closer to the hidden space
+                        // Si el boto buit esta a la primera fila movem tots els botons
                         if (columnaClick < columnaAmbForat)
                         {
-                            // Move buttons to the right
+                            // cap a la dreta
                             for (int columna = columnaAmbForat - 1; columna >= columnaClick; columna--)
                             {
                                 CambiaPosicio(filaClick, columna + 1, filaClick, columna);
-                                CambiarColor(filaClick, botoClickat, columnaClick); // Update the color after the swap
-                                CambiarColor(filaAmbForat, fitxes[filaAmbForat, columnaAmbForat], columnaAmbForat); // Update the color of the hidden button
+                               
                                 clicks++;
                             }
                         }
                         else if (columnaClick > columnaAmbForat)
                         {
-                            // Move buttons to the left
+                            // esquerra
                             for (int columna = columnaAmbForat + 1; columna <= columnaClick; columna++)
                             {
                                 CambiaPosicio(filaClick, columna - 1, filaClick, columna);
-                                CambiarColor(filaClick, botoClickat, columnaClick); // Update the color after the swap
-                                CambiarColor(filaAmbForat, fitxes[filaAmbForat, columnaAmbForat], columnaAmbForat); // Update the color of the hidden button
+                                
                                 clicks++;
                             }
                         }
                     }
                     else if (columnaClick == columnaAmbForat)
                     {
-                        // If the clicked button is in the same column, move all buttons in the column closer to the hidden space
+                        // el mateix amb les columnes
                         if (filaClick < filaAmbForat)
                         {
-                            // Move buttons down
+                            // cap avalla
                             for (int fila = filaAmbForat - 1; fila >= filaClick; fila--)
                             {
                                 CambiaPosicio(fila + 1, columnaClick, fila, columnaClick);
-                                CambiarColor(filaClick, botoClickat, columnaClick); // Update the color after the swap
-                                CambiarColor(filaAmbForat, fitxes[filaAmbForat, columnaAmbForat], columnaAmbForat); // Update the color of the hidden button
+                               
                                 clicks++;
                             }
                         }
                         else if (filaClick > filaAmbForat)
                         {
-                            // Move buttons up
+                            // cap amunt
                             for (int fila = filaAmbForat + 1; fila <= filaClick; fila++)
                             {
                                 CambiaPosicio(fila - 1, columnaClick, fila, columnaClick);
-                                CambiarColor(filaClick, botoClickat, columnaClick); // Update the color after the swap
-                                CambiarColor(filaAmbForat, fitxes[filaAmbForat, columnaAmbForat], columnaAmbForat); // Update the color of the hidden button
+                             
                                 clicks++;
                             }
                         }
                     }
-
-
                 }
 
-              
+                CambiarColor();
 
             }
             sbClicks.Text = clicks.ToString();
@@ -345,35 +328,44 @@ namespace PracticaPuzzle
                 }
             }
 
-            // Update the percentage completion
+            
             int totalButtons = columnes * files - 1;
             sbCompletat.Text = (correctButtons * 100 / totalButtons) + "%";
 
-
+            if (sbCompletat.Text == "100%")
+            {
+                MessageBoxResult result = MessageBox.Show("Has guanyat!", "Felicitats", MessageBoxButton.OK);
+                if (result == MessageBoxResult.OK)
+                {
+                    
+                    this.Close(); 
+                }
+            }
         }
 
-        private void CambiarColor(int fila, Fitxa fitxa, int columna )
+        private void CambiarColor()
         {
-            string[] posicioTag = fitxa.Tag.ToString().Split(',');
-            int filaCorrecte = int.Parse(posicioTag[0]);
-            int columnaCorrecte = int.Parse(posicioTag[1]);
-
-            
-            if (fila == filaCorrecte && columna == columnaCorrecte)
+            for (int fila = 0; fila < files; fila++)
             {
-               
-                fitxa.Background = new SolidColorBrush(Colors.Green);
-               
-            }
-            else
-            {
-                
-                fitxa.Background = new SolidColorBrush(Colors.IndianRed);     
-                
-            }
+                for (int columna = 0; columna < columnes; columna++)
+                {
+                    Fitxa fitxa = fitxes[fila, columna];
+                    string[] posicioTag = fitxa.Tag.ToString().Split(',');
+                    int filaCorrecte = int.Parse(posicioTag[0]);
+                    int columnaCorrecte = int.Parse(posicioTag[1]);
 
-
+                    if (fila == filaCorrecte && columna == columnaCorrecte)
+                    {
+                        fitxa.Background = new SolidColorBrush(Colors.Green);
+                    }
+                    else
+                    {
+                        fitxa.Background = new SolidColorBrush(DefaultButtonColor);
+                    }
+                }
+            }
         }
+
 
         private void CambiaPosicio(int row1, int col1, int row2, int col2)
         {
@@ -381,7 +373,7 @@ namespace PracticaPuzzle
             fitxes[row1, col1] = fitxes[row2, col2];
             fitxes[row2, col2] = tempFitxa;
             
-            // Update the row and column properties of the Fitxa buttons
+        
             Grid.SetRow(fitxes[row1, col1], row1);
             Grid.SetColumn(fitxes[row1, col1], col1);
             Grid.SetRow(fitxes[row2, col2], row2);
@@ -430,7 +422,7 @@ namespace PracticaPuzzle
             }
         }
 
-        private bool IsSolvable(List<int> numbers)
+        private bool esResoluble(List<int> numbers)
         {
             int inversions = 0;
             bool resoluble = false;
@@ -445,14 +437,14 @@ namespace PracticaPuzzle
                 }
             }
 
-            // If the number of inversions is even, the puzzle is solvable.
+            // Si es parell es resoluble
             if (inversions % 2 == 0)
             {
                 resoluble = true;
             }
             else
             {
-                // If the number of inversions is odd, swap the last two numbers to make it solvable.
+                // si es imparell, swap els dos ultims
                 int lastIndex = numbers.Count - 1;
 
                 int temp = numbers[lastIndex];

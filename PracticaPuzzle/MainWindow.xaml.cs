@@ -41,7 +41,7 @@ namespace PracticaPuzzle
             }
             else
             {
-                // Display an error message to the user or take appropriate action for invalid input.
+                
                 MessageBox.Show("Columnes i files no pot ser 1");
             }
         }

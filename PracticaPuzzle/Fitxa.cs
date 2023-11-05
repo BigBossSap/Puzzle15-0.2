@@ -13,20 +13,16 @@ namespace PracticaPuzzle
     {
         public Fitxa()
         {
-            // Set up your button properties here
-            // For example, you can set the content to a Viewbox
+         
             Viewbox viewbox = new Viewbox();
             TextBlock textBlock = new TextBlock();
             viewbox.Child = textBlock;
             Content = viewbox;
-            Number = -1; // Set an initial number, e.g., -1
-            DisplayText = "";
-
+            Numero = -1; 
+           
         }
-
      
-     
-        public int Number { get; set; }
+        public int Numero { get; set; }
         public string DisplayText { get; set; }
         public string Text
         {
